@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EWUMart — University Marketplace</title>
+  <meta name="description" content="East West University's student-to-student marketplace for course books, notes, electronics, and more.">
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+<!-- ══════════ AUTH ══════════ -->
+<div id="auth-screen">
+  <div class="auth-left">
+    <div class="auth-logo">EWU<span>Mart</span></div>
+    <div class="auth-tag">East West University's Student Marketplace</div>
+    <!--<ul class="auth-features">
+      <li><span class="fi">📚</span> Buy &amp; sell course books and materials</li>
+      <li><span class="fi">🔍</span> Filter by course code or category</li>
+      <li><span class="fi">💬</span> In-app messaging with fellow students</li>
+      <li><span class="fi">⭐</span> Trust ratings &amp; peer reviews</li>
+      <li><span class="fi">🛡️</span> Admin-moderated for campus safety</li>
+    </ul> -->
+  </div>
+  <div class="auth-right">
+    <div class="auth-box">
+      <h2 id="auth-h">Welcome back</h2>
+      <p class="sub">Sign in to your EWUMart account</p>
+      <div class="auth-tabs">
+        <button class="auth-tab active" onclick="AuthController.switchTab('login',this)">Login</button>
+        <button class="auth-tab"        onclick="AuthController.switchTab('register',this)">Register</button>
+      </div>
+      <div id="auth-err" class="error-msg"></div>
+      <!-- login -->
+      <div id="login-form">
+        <div class="fg"><label>EWU Email</label><input id="l-email" type="email" placeholder="you@ewubd.edu"/></div>
+        <div class="fg"><label>Password</label><input id="l-pass" type="password" placeholder="Enter password"/></div>
+        <button class="btn btn-primary btn-lg" style="width:100%" onclick="AuthController.login()">Sign In →</button>
+        <div class="auth-div"><span>or try demo</span></div>
+        <button class="btn btn-ghost" style="width:100%"            onclick="AuthController.demo('user')">🎓 Continue as Student</button>
+        <button class="btn btn-ghost" style="width:100%;margin-top:8px" onclick="AuthController.demo('admin')">🛡️ Continue as Admin</button>
+      </div>
+      <!-- register -->
+      <div id="register-form" class="hidden">
+        <div class="form-row">
+          <div class="fg"><label>First Name</label><input id="r-fn" placeholder="Rahim"/></div>
+          <div class="fg"><label>Last Name</label><input id="r-ln" placeholder="Uddin"/></div>
+        </div>
+        <div class="fg"><label>EWU Email</label><input id="r-em" type="email" placeholder="you@ewubd.edu"/></div>
+        <div class="fg"><label>Student ID</label><input id="r-sid" placeholder="2021-1-60-XXX"/></div>
+        <div class="form-row">
+          <div class="fg"><label>Department</label>
+            <select id="r-dept"><option value="">Select</option><option>CSE</option><option>EEE</option><option>BBA</option><option>ENG</option><option>LAW</option><option>PHM</option><option>ECO</option></select>
+          </div>
+          <div class="fg"><label>Semester</label>
+            <select id="r-sem"><option value="">Select</option><option>Spring 2025</option><option>Summer 2025</option><option>Fall 2025</option></select>
+          </div>
+        </div>
+        <div class="fg"><label>Password</label><input id="r-pw" type="password" placeholder="Min 6 characters"/></div>
+        <button class="btn btn-primary btn-lg" style="width:100%" onclick="AuthController.register()">Create Account →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ APP ══════════ -->
+<div id="app">
+
+  <!-- Top Navbar -->
+  <nav class="topnav">
+    <div class="nav-logo" onclick="Router.go('dashboard')">EWU<span>Mart</span></div>
+    <div class="nav-search">
+      <span class="si">🔍</span>
+      <input id="g-srch" placeholder="Search products, courses…" oninput="MarketController.globalSearch()"/>
+    </div>
+    <div class="nav-right">
+      <button class="nav-ib" onclick="Router.go('messages')" title="Messages" style="position:relative;">
+        💬<span class="msg-cnt hidden" id="nav-msg-cnt"></span>
+      </button>
+      <div class="dd-wrap">
+        <button class="nav-ib" onclick="NotifController.toggle()">
+          🔔<span class="notif-dot" id="notif-dot"></span>
+        </button>
+        <div class="dd" id="notif-dd">
+          <div class="dd-hdr">Notifications</div>
+          <div class="dd-item"><div class="ni-t">New message from Nadia</div><div class="ni-s">About your CSE 115 notes listing</div></div>
+          <div class="dd-item"><div class="ni-t">Your item was purchased! 🎉</div><div class="ni-s">CSE 301 notes sold for ৳250</div></div>
+          <div class="dd-item"><div class="ni-t">New review received ⭐⭐⭐⭐⭐</div><div class="ni-s">Rafi gave you 5 stars</div></div>
+        </div>
+      </div>
+      <div class="nav-avatar" id="nav-av" onclick="Router.go('profile')"></div>
+    </div>
+  </nav>
+
+  <div class="app-body">
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sb-sec">Main</div>
+      <button class="sb-item" id="sb-dashboard"   onclick="Router.go('dashboard')"><span class="ic">🏠</span> Dashboard</button>
+      <button class="sb-item" id="sb-marketplace" onclick="Router.go('marketplace')"><span class="ic">🛒</span> Marketplace</button>
+      <button class="sb-item" id="sb-messages"    onclick="Router.go('messages')"><span class="ic">💬</span> Messages <span class="sb-bdg hidden" id="sb-msg-bdg"></span></button>
+      <div class="sb-sec">My Account</div>
+      <button class="sb-item" id="sb-my-posts"    onclick="Router.go('my-posts')"><span class="ic">📋</span> My Posts</button>
+      <button class="sb-item" id="sb-transactions"onclick="Router.go('transactions')"><span class="ic">💰</span> Transactions</button>
+      <button class="sb-item" id="sb-profile"     onclick="Router.go('profile')"><span class="ic">👤</span> Profile</button>
+      <div id="sb-admin-sec" class="hidden">
+        <div class="sb-sec">Admin</div>
+        <button class="sb-item" id="sb-admin"     onclick="Router.go('admin')"><span class="ic">🛡️</span> Admin Panel</button>
+      </div>
+      <button class="sb-item sb-logout" onclick="AuthController.logout()" style="margin-top:auto"><span class="ic">🚪</span> Logout</button>
+    </aside>
+
+    <!-- Main content -->
+    <div class="main-content">
+
+      <!-- DASHBOARD -->
+      <div class="page" id="page-dashboard">
+        <div class="dash-hero">
+          <div class="dh-av" id="dh-av"></div>
+          <div>
+            <div class="dh-name" id="dh-name"></div>
+            <div class="dh-meta"><span id="dh-dept"></span><span id="dh-sem"></span></div>
+            <div class="dh-rating"><span class="stars">★★★★★</span><span style="font-size:13px;opacity:.85;margin-left:5px;">4.8 · 12 reviews</span></div>
+          </div>
+          <div class="dh-acts">
+            <button class="btn btn-accent" onclick="Router.go('create-post')">+ New Post</button>
+            <button class="btn btn-outline" style="border-color:rgba(255,255,255,.5);color:#fff" onclick="Router.go('profile')">Edit Profile</button>
+          </div>
+        </div>
+        <div class="stat-grid">
+          <div class="sc"><div class="sc-icon">📦</div><div class="sc-lbl">Listed</div><div class="sc-val" id="s-listed">0</div><div class="sc-sub">Active listings</div></div>
+          <div class="sc"><div class="sc-icon">✅</div><div class="sc-lbl">Sold</div><div class="sc-val" id="s-sold">0</div><div class="sc-sub">Completed</div></div>
+          <div class="sc"><div class="sc-icon">🛍️</div><div class="sc-lbl">Bought</div><div class="sc-val" id="s-bought">0</div><div class="sc-sub">Items purchased</div></div>
+        </div>
+        <div class="dash-two">
+          <div class="card">
+            <div class="sec-title">Recent Listings <button class="btn btn-ghost btn-sm" onclick="Router.go('my-posts')">See all</button></div>
+            <div id="dash-listings"></div>
+          </div>
+          <div class="card">
+            <div class="sec-title">Recent Reviews</div>
+            <div id="dash-reviews"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- MARKETPLACE -->
+      <div class="page" id="page-marketplace">
+        <div class="page-hdr"><div><h2>Marketplace</h2><p>Listings from all EWU students</p></div></div>
+        <div class="filter-bar">
+          <div class="ff"><label>Course Code</label><input id="f-course" placeholder="e.g. CSE 301" oninput="MarketController.filter()"/></div>
+          <div class="ff"><label>Category</label>
+            <select id="f-cat" onchange="MarketController.filter()">
+              <option value="">All Categories</option><option>Textbooks</option><option>Lab Supplies</option>
+              <option>Notes &amp; Reports</option><option>Electronics</option><option>Stationery</option><option>Other</option>
+            </select>
+          </div>
+          <div class="ff"><label>Min ৳</label><input id="f-min" type="number" placeholder="0" oninput="MarketController.filter()"/></div>
+          <div class="ff"><label>Max ৳</label><input id="f-max" type="number" placeholder="9999" oninput="MarketController.filter()"/></div>
+          <div class="ff"><label>Type</label>
+            <select id="f-type" onchange="MarketController.filter()">
+              <option value="">All</option><option>Sell</option><option>Want</option>
+            </select>
+          </div>
+          <button class="btn btn-ghost btn-sm" onclick="MarketController.clearFilters()">Clear</button>
+        </div>
+        <div class="products-grid" id="products-grid"></div>
+      </div>
+
+      <!-- MESSAGES -->
+      <div class="page" id="page-messages">
+        <div class="page-hdr"><div><h2>Messages</h2><p>Chat with buyers and sellers</p></div></div>
+        <div class="msg-layout">
+          <div class="cl-panel">
+            <div class="cl-hdr">
+              <h3>Conversations</h3>
+              <div class="cl-search-wrap"><span class="csi">🔍</span><input id="cl-srch" placeholder="Search conversations…" oninput="MsgController.filterConvos()"/></div>
+            </div>
+            <div class="cl-list" id="cl-list"></div>
+          </div>
+          <div class="chat-panel">
+            <div class="chat-ph" id="chat-ph"><div class="ph-ic">💬</div><div style="font-size:15px;">Select a conversation</div><div style="font-size:13px;">Or start a chat from any product</div></div>
+            <div class="chat-hdr hidden" id="chat-hdr">
+              <div class="chat-hdr-av" id="chat-hdr-av"></div>
+              <div><div class="chat-hdr-name" id="chat-hdr-name"></div><div class="chat-hdr-sub" id="chat-hdr-sub"></div></div>
+            </div>
+            <div class="chat-msgs hidden" id="chat-msgs"></div>
+            <div class="chat-input-row hidden" id="chat-inp-row">
+              <input id="chat-inp" placeholder="Type a message…" onkeydown="if(event.key==='Enter')MsgController.send()"/>
+              <button class="btn btn-primary" onclick="MsgController.send()">Send</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- MY POSTS -->
+      <div class="page" id="page-my-posts">
+        <div class="page-hdr"><div><h2>My Posts</h2><p>Manage your listings</p></div><button class="btn btn-primary" onclick="Router.go('create-post')">+ New Post</button></div>
+        <div class="card" style="padding:0;overflow:hidden">
+          <table class="pt" style="width:100%">
+            <thead><tr><th>Item</th><th>Type</th><th>Price</th><th>Status</th><th>Date</th><th>Actions</th></tr></thead>
+            <tbody id="my-posts-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- CREATE / EDIT POST -->
+      <div class="page" id="page-create-post">
+        <div class="page-hdr"><div><h2 id="cp-title">Create New Post</h2><p>List something to sell or post a wanted ad</p></div></div>
+        <div class="card" style="max-width:680px">
+          <div class="pt-sel" id="pt-sel">
+            <div class="pt-opt sel" onclick="PostController.selectType('Sell',this)"><div class="ico">💰</div><div class="lbl">Sell</div><div class="dsc">List an item for sale</div></div>
+            <div class="pt-opt"     onclick="PostController.selectType('Want',this)"><div class="ico">🔍</div><div class="lbl">Want</div><div class="dsc">Post what you need</div></div>
+          </div>
+          <div class="form-row">
+            <div class="fg"><label>Title *</label><input id="p-title" placeholder="e.g. Data Structures by Cormen"/></div>
+            <div class="fg"><label>Course Code *</label><input id="p-course" placeholder="e.g. CSE 301"/></div>
+          </div>
+          <div class="form-row">
+            <div class="fg"><label>Category</label>
+              <select id="p-cat"><option>Textbooks</option><option>Lab Supplies</option><option>Notes &amp; Reports</option><option>Electronics</option><option>Stationery</option><option>Other</option></select>
+            </div>
+            <div class="fg"><label>Price (৳) *</label><input id="p-price" type="number" placeholder="350"/></div>
+          </div>
+          <div class="fg"><label>Description</label><textarea id="p-desc" placeholder="Condition, edition, any details…"></textarea></div>
+          <div class="fg"><label>Condition</label><select id="p-cond"><option>New</option><option>Like New</option><option>Good</option><option>Fair</option></select></div>
+          <div class="fg"><label>Photo</label>
+            <div class="upload-area" onclick="document.getElementById('p-img').click()">
+              <div style="font-size:30px;margin-bottom:8px;">📷</div>
+              <div style="font-size:14px;color:var(--text2)">Click to upload photo</div>
+              <div style="font-size:12px;color:var(--text3);margin-top:3px">JPG, PNG up to 5MB</div>
+              <input type="file" id="p-img" class="hidden" accept="image/*"/>
+            </div>
+          </div>
+          <div style="display:flex;gap:10px;justify-content:flex-end">
+            <button class="btn btn-ghost" onclick="Router.go('my-posts')">Cancel</button>
+            <button class="btn btn-primary" onclick="PostController.submit()" id="cp-btn">Publish Post</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- TRANSACTIONS -->
+      <div class="page" id="page-transactions">
+        <div class="page-hdr"><div><h2>Transactions</h2><p>Your buying &amp; selling history</p></div></div>
+        <div class="tabs">
+          <button class="tab active" onclick="TxnController.setFilter('all',this)">All</button>
+          <button class="tab"        onclick="TxnController.setFilter('sales',this)">Sales</button>
+          <button class="tab"        onclick="TxnController.setFilter('purchases',this)">Purchases</button>
+        </div>
+        <div class="card" id="txn-list"></div>
+      </div>
+
+      <!-- PROFILE -->
+      <div class="page" id="page-profile">
+        <div class="page-hdr"><div><h2>My Profile</h2><p>Account details and reviews</p></div></div>
+        <div class="profile-layout">
+          <div>
+            <div class="card pfl-card" style="margin-bottom:16px">
+              <div class="pfl-av" id="pfl-av"></div>
+              <div style="font-family:'Syne',sans-serif;font-size:18px;font-weight:700" id="pfl-name"></div>
+              <div style="font-size:13px;color:var(--text2);margin-top:3px" id="pfl-id"></div>
+              <div style="margin-top:10px"><span class="stars">★★★★★</span> <span style="font-size:13px">4.8 (12)</span></div>
+              <div style="margin-top:14px;text-align:left;display:flex;flex-direction:column;gap:5px">
+                <div style="font-size:13px"><strong>Dept:</strong> <span id="pfl-dept"></span></div>
+                <div style="font-size:13px"><strong>Semester:</strong> <span id="pfl-sem"></span></div>
+                <div style="font-size:13px"><strong>Email:</strong> <span id="pfl-email"></span></div>
+              </div>
+            </div>
+            <div class="card"><div class="sec-title" style="margin-bottom:12px">Reviews Received</div><div id="pfl-reviews"></div></div>
+          </div>
+          <div class="card">
+            <h3 style="font-size:16px;font-weight:700;margin-bottom:20px">Edit Details</h3>
+            <div class="form-row">
+              <div class="fg"><label>First Name</label><input id="e-fn"/></div>
+              <div class="fg"><label>Last Name</label><input id="e-ln"/></div>
+            </div>
+            <div class="fg"><label>Email</label><input id="e-em" readonly style="background:var(--bg)"/></div>
+            <div class="form-row">
+              <div class="fg"><label>Department</label><select id="e-dept"><option>CSE</option><option>EEE</option><option>BBA</option><option>ENG</option><option>LAW</option><option>PHM</option><option>ECO</option></select></div>
+              <div class="fg"><label>Semester</label><select id="e-sem"><option>Spring 2025</option><option>Summer 2025</option><option>Fall 2025</option></select></div>
+            </div>
+            <div class="fg"><label>Bio</label><textarea id="e-bio" placeholder="Tell others about yourself…"></textarea></div>
+            <div style="border-top:1px solid var(--border);padding-top:16px;margin-top:4px">
+              <h4 style="font-size:14px;font-weight:600;margin-bottom:14px">Change Password</h4>
+              <div class="fg"><label>Current Password</label><input id="e-cp" type="password"/></div>
+              <div class="form-row">
+                <div class="fg"><label>New Password</label><input id="e-np" type="password"/></div>
+                <div class="fg"><label>Confirm</label><input id="e-cf" type="password"/></div>
+              </div>
+            </div>
+            <div style="display:flex;gap:10px;justify-content:flex-end">
+              <button class="btn btn-ghost">Cancel</button>
+              <button class="btn btn-primary" onclick="ProfileController.save()">Save Changes</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ADMIN -->
+      <div class="page" id="page-admin">
+        <div class="page-hdr"><div><h2>Admin Panel</h2><p>Monitor and moderate EWUMart</p></div></div>
+        <div class="admin-sg">
+          <div class="sc"><div class="sc-lbl">Total Users</div><div class="sc-val" id="adm-u">0</div></div>
+          <div class="sc"><div class="sc-lbl">Active Listings</div><div class="sc-val" id="adm-l">0</div></div>
+          <div class="sc"><div class="sc-lbl">Transactions</div><div class="sc-val" id="adm-t">0</div></div>
+          <div class="sc"><div class="sc-lbl">Pending Reports</div><div class="sc-val" style="color:var(--danger)" id="adm-r">0</div></div>
+        </div>
+        <div class="tabs">
+          <button class="tab active" onclick="AdminController.setTab('listings',this)">All Listings</button>
+          <button class="tab"        onclick="AdminController.setTab('users',this)">Users</button>
+          <button class="tab"        onclick="AdminController.setTab('reports',this)">Reports</button>
+        </div>
+        <div id="adm-content"></div>
+      </div>
+
+    </div><!-- /main-content -->
+  </div><!-- /app-body -->
+
+  <!-- Bottom Menu Bar -->
+  <div class="bottom-bar">
+    <button class="bar-btn active" id="bar-dashboard"   onclick="Router.go('dashboard')"><span class="bi">🏠</span><span class="bl">Home</span></button>
+    <button class="bar-btn"        id="bar-marketplace" onclick="Router.go('marketplace')"><span class="bi">🛒</span><span class="bl">Shop</span></button>
+    <button class="bar-post" onclick="Router.go('create-post')">
+      <div class="bar-post-circle">＋</div>
+      <div class="bar-post-lbl">Post</div>
+    </button>
+    <button class="bar-btn" id="bar-messages" onclick="Router.go('messages')"><span class="bi">💬</span><span class="bl">Messages</span><span class="bb hidden" id="bar-msg-bb"></span></button>
+    <button class="bar-btn" id="bar-profile"  onclick="Router.go('profile')"><span class="bi">👤</span><span class="bl">Profile</span></button>
+  </div>
+
+</div><!-- /app -->
+
+<!-- Product Modal -->
+<div class="overlay" id="prod-modal">
+  <div class="modal">
+    <div class="modal-hdr"><h3 id="pm-title"></h3><button class="modal-close" onclick="ModalController.closeProduct()">✕</button></div>
+    <div class="modal-body" id="pm-body"></div>
+    <div class="modal-ftr"  id="pm-ftr"></div>
+  </div>
+</div>
+
+<!-- Report Modal -->
+<div class="overlay" id="rep-modal">
+  <div class="modal">
+    <div class="modal-hdr"><h3>Report Content</h3><button class="modal-close" onclick="ReportController.close()">✕</button></div>
+    <div class="modal-body">
+      <div class="fg"><label>Reason</label>
+        <select id="rep-rsn"><option>Fraudulent listing</option><option>Inappropriate content</option><option>Wrong price / misleading</option><option>Spam</option><option>Other</option></select>
+      </div>
+      <div class="fg"><label>Details</label><textarea id="rep-dtl" placeholder="Describe the issue…"></textarea></div>
+    </div>
+    <div class="modal-ftr">
+      <button class="btn btn-ghost"   onclick="ReportController.close()">Cancel</button>
+      <button class="btn btn-danger"  onclick="ReportController.submit()">Submit Report</button>
+    </div>
+  </div>
+</div>
+
+<!-- Admin: Create User Modal -->
+<div class="overlay" id="adm-create-user-modal">
+  <div class="modal" style="max-width:520px">
+    <div class="modal-hdr"><h3>Create New User</h3><button class="modal-close" onclick="AdminController.closeCreateUser()">✕</button></div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="fg"><label>First Name *</label><input id="adm-u-fn" placeholder="Rahim"/></div>
+        <div class="fg"><label>Last Name</label><input id="adm-u-ln" placeholder="Uddin"/></div>
+      </div>
+      <div class="fg"><label>EWU Email *</label><input id="adm-u-em" type="email" placeholder="student@ewubd.edu"/></div>
+      <div class="fg"><label>Student ID</label><input id="adm-u-sid" placeholder="2024-1-60-XXX"/></div>
+      <div class="form-row">
+        <div class="fg"><label>Department *</label>
+          <select id="adm-u-dept"><option>CSE</option><option>EEE</option><option>BBA</option><option>ENG</option><option>LAW</option><option>PHM</option><option>ECO</option></select>
+        </div>
+        <div class="fg"><label>Semester *</label>
+          <select id="adm-u-sem"><option>Spring 2025</option><option>Summer 2025</option><option>Fall 2025</option></select>
+        </div>
+      </div>
+      <div class="fg"><label>Password * (min 6 chars)</label><input id="adm-u-pw" type="password" placeholder="········"/></div>
+      <div class="fg"><label>Role</label>
+        <select id="adm-u-role"><option value="user">Student (User)</option><option value="admin">Admin</option></select>
+      </div>
+    </div>
+    <div class="modal-ftr">
+      <button class="btn btn-ghost" onclick="AdminController.closeCreateUser()">Cancel</button>
+      <button class="btn btn-primary" onclick="AdminController.createUser()">Create Account</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<!-- ══════════════════════════════════════════
+     JavaScript — loaded in dependency order
+══════════════════════════════════════════ -->
+
+<!-- Layer: Core utilities -->
+<script src="js/ApiService.js"></script>
+<script src="js/Database.js"></script>
+<script src="js/Toast.js"></script>
+<script src="js/Badge.js"></script>
+<script src="js/Router.js"></script>
+
+<!-- Layer: Feature controllers -->
+<script src="js/controllers/AuthController.js"></script>
+<script src="js/controllers/DashController.js"></script>
+<script src="js/controllers/MarketController.js"></script>
+<script src="js/controllers/MsgController.js"></script>
+<script src="js/controllers/PostController.js"></script>
+<script src="js/controllers/PostListController.js"></script>
+<script src="js/controllers/TxnController.js"></script>
+<script src="js/controllers/ProfileController.js"></script>
+<script src="js/controllers/AdminController.js"></script>
+<script src="js/controllers/ModalController.js"></script>
+<script src="js/controllers/ReportController.js"></script>
+<script src="js/controllers/NotifController.js"></script>
+
+<!-- Layer: App bootstrap -->
+<script src="js/app.js"></script>
+
+</body>
+</html>
